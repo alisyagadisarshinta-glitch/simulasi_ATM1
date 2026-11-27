@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCN mobile</title>
+  <style>
+    :root {
+      --latar-atas: #fff5f8;
+      --latar-tengah: #ffe0ec;
+      --latar-bawah: #fbc9dc;
+      --tombol-terang: #ffc9de;
+      --tombol-sedang: #f79ec2;
+      --tombol-dalam: #e06b9e;
+      --permukaan-kartu: #fffaf7;
+      --border-pink: #f4b6d0;
+      --teks-gelap: #5a1f3a;
+      --teks-sedang: #883c5e;
+      --badge-pink: #ffe7f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--latar-atas), var(--latar-tengah), var(--latar-bawah));
+      color: var(--teks-gelap);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Elemen gerak pastel melayang */
+    .dekor-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.48);
+      border: 1.4px solid rgba(255, 255, 255, 0.85);
+    }
+
+    .bubble-1 { width: 46px; height: 46px; top: 48px; left: 22px; animation: gerak1 5.2s ease-in-out infinite; }
+    .bubble-2 { width: 34px; height: 34px; bottom: 52px; right: 30px; animation: gerak2 5.2s ease-in-out infinite; }
+
+    .sparkle {
+      position: absolute;
+      top: 112px;
+      right: 26px;
+      font-size: 26px;
+      color: rgba(224, 107, 158, 0.48);
+      animation: bintang 5.2s ease-in-out infinite;
+    }
+
+    .heart-float {
+      position: absolute;
+      bottom: 96px;
+      left: 34px;
+      font-size: 20px;
+      color: rgba(224, 107, 158, 0.34);
+      animation: hati 5.2s ease-in-out infinite;
+    }
+
+    @keyframes gerak1 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(10px, 14px); }
+    }
+    @keyframes gerak2 {
+      0%, 100% { transform: translate(-10px, 0); }
+      50% { transform: translate(0, 16px); }
+    }
+    @keyframes bintang {
+      0%, 100% { transform: rotate(-20deg) scale(0.9); }
+      50% { transform: rotate(20deg) scale(1.12); }
+    }
+    @keyframes hati {
+      0%, 100% { transform: rotate(20deg) translateY(0); }
+      50% { transform: rotate(-20deg) translateY(-14px); }
+    }
+
+    .app-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 20px 20px 48px;
+    }
+
+    .screen { display: none; animation: transisiMasuk 0.26s ease-out; }
+    .screen.active { display: block; }
+
+    @keyframes transisiMasuk {
+      from { opacity: 0; transform: translate(14px, 8px); }
+      to { opacity: 1; transform: translate(0, 0); }
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .icon-btn {
+      border: 1.5px solid #fff;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--teks-gelap);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: #fff; }
+
+    .brand-title {
+      text-align: center;
+      font-size: 42px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      color: var(--teks-gelap);
+    }
+    .brand-title span { font-size: 28px; font-style: normal; }
+
+    .card {
+      background: rgba(255, 250, 247, 0.94);
+      border: 1.5px solid #fff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(136, 60, 94, 0.12);
+      margin-bottom: 14px;
+    }
+
+    .jalur-box {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #fff;
+      box-shadow: 0 4px 12px rgba(136, 60, 94, 0.14);
+      margin-bottom: 16px;
+    }
+
+    .jalur-item {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #fff;
+      background: linear-gradient(180deg, var(--tombol-terang), var(--tombol-sedang), var(--tombol-dalam));
+      color: #fff;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .jalur-item:last-child { border-bottom: none; }
+    .jalur-item:hover { filter: brightness(1.03); }
+
+    .jalur-kiri { display: flex; align-items: center; gap: 16px; }
+    .jalur-badge {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      background: #fff;
+      color: var(--teks-gelap);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 11.5px;
+      box-shadow: 0 2px 6px rgba(136, 60, 94, 0.14);
+      flex-shrink: 0;
+    }
+    .jalur-nama { font-size: 19px; font-weight: 900; }
+    .jalur-sub { font-size: 11.5px; font-weight: 500; margin-top: 2px; }
+
+    .btn-next {
+      width: 100%;
+      border: 1.8px solid #fff;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font-size: 15px;
+      font-weight: 900;
+      color: #fff;
+      background: linear-gradient(180deg, var(--tombol-terang), var(--tombol-sedang), var(--tombol-dalam));
+      box-shadow: 0 4px 12px rgba(224, 107, 158, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      animation: pantulNext 0.95s ease-in-out infinite alternate;
+    }
+    .btn-next.sekunder {
+      background: linear-gradient(90deg, #fff9fc, #ffdfec);
+      color: var(--teks-gelap);
+    }
+    .btn-next:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
+    .btn-next:active:not(:disabled) { transform: scale(0.955); }
+
+    @keyframes pantulNext {
+      from { transform: translateY(0); }
+      to { transform: translateY(-2.5px); }
+    }
+
+    .btn-utama {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 0.4px;
+      color: #fff;
+      background: var(--tombol-dalam);
+      cursor: pointer;
+    }
+    .btn-utama:hover { filter: brightness(0.96); }
+
+    .btn-kecil {
+      border: 1px solid var(--border-pink);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--badge-pink);
+      color: var(--teks-gelap);
+      cursor: pointer;
+    }
+    .btn-kecil.aktif { background: var(--tombol-dalam); color: #fff; border-color: var(--tombol-dalam); }
+
+    .pesan-box {
+      background: var(--badge-pink);
+      color: var(--teks-gelap);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .row-flex { display: flex; gap: 8px; align-items: center; }
+    .row-flex > .grow { flex: 1; }
+
+    input {
+      width: 100%;
+      padding: 13px 15px;
+      border-radius: 12px;
+      border: 1px solid var(--border-pink);
+      background: #fff;
+      color: var(--teks-gelap);
+      font-size: 14px;
+      outline: none;
+    }
+    input::placeholder { color: #b57c96; font-size: 13.5px; }
+    input:focus { border-color: var(--tombol-dalam); border-width: 1.8px; }
+
+    .saldo-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .saldo-angka { font-size: 24px; font-weight: 900; margin-top: 4px; }
+
+    .menu-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .menu-tab {
+      border: 1.4px solid var(--border-pink);
+      background: #fff;
+      color: var(--teks-gelap);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .menu-tab.active { background: var(--tombol-dalam); color: #fff; border-color: #fff; }
+
+    .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 14px 0; }
+    .qr-box {
+      background: #fff;
+      border: 1.5px solid var(--border-pink);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(136, 60, 94, 0.1);
+    }
+    .barcode-box {
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--border-pink);
+      border-radius: 12px;
+      padding: 10px 14px;
+      text-align: center;
+    }
+    .barcode-kode { font-size: 11.5px; font-weight: 800; letter-spacing: 0.7px; margin-top: 6px; word-break: break-all; }
+
+    .trx-item {
+      border: 1px solid var(--border-pink);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 13px;
+      margin-bottom: 8px;
+      font-size: 12.5px;
+    }
+    .trx-atas { display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 4px; }
+    .status-ok { color: #1b7a43; }
+    .status-no { color: #b4233c; }
+    .catatan-kecil { text-align: center; font-size: 11.5px; color: var(--teks-sedang); line-height: 1.45; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="dekor-layer" aria-hidden="true">
+    <div class="bubble bubble-1"></div>
+    <div class="sparkle">✦</div>
+    <div class="heart-float">♥</div>
+    <div class="bubble bubble-2"></div>
+  </div>
+
+  <div class="app-wrap">
+    <!-- 1. LAYAR AWAL VCN MOBILE -->
+    <section id="layar-awal" class="screen active">
+      <div class="topbar">
+        <span></span>
+        <button class="icon-btn" onclick="bukaInfo()">ⓘ Info</button>
+      </div>
+      <div class="brand-title">VCN <span>mobile</span></div>
+      <p class="catatan-kecil" style="margin-bottom: 16px;">Rekening terakhir: <b id="rek-terakhir-label">-</b></p>
+
+      <div class="jalur-box">
+        <button class="jalur-item" onclick="bukaMasuk('mVcn')">
+          <div class="jalur-kiri">
+            <div class="jalur-badge">m-VCN</div>
+            <div>
+              <div class="jalur-nama">m-VCN</div>
+              <div class="jalur-sub">Transfer, Tarik/Setor Tunai &amp; QRIS</div>
+            </div>
+          </div>
+          <span>›</span>
+        </button>
+        <button class="jalur-item" onclick="bukaMasuk('klikVcn')">
+          <div class="jalur-kiri">
+            <div class="jalur-badge">KlikVCN</div>
+            <div>
+              <div class="jalur-nama">KlikVCN</div>
+              <div class="jalur-sub">Mutasi, Ganti PIN &amp; Transfer</div>
+            </div>
+          </div>
+          <span>›</span>
+        </button>
+        <button class="jalur-item" onclick="bukaMasuk('myVcn')">
+          <div class="jalur-kiri">
+            <div class="jalur-badge">myVCN</div>
+            <div>
+              <div class="jalur-nama">myVCN</div>
+              <div class="jalur-sub">QRIS, Barcode &amp; Saldo</div>
+            </div>
+          </div>
+          <span>›</span>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <button class="btn-next" onclick="bukaDaftar()">♥ Next • Buka Rekening Baru →</button>
+      </div>
+      <button class="btn-next sekunder" onclick="bukaMasuk('myVcn')">♥ Next • QRIS &amp; Barcode →</button>
+
+      <p class="catatan-kecil">
+        VCN mobile • Simulasi Layanan Rekening &amp; Transaksi Digital.<br />
+        Seluruh saldo, nama pengguna, nomor rekening, dan PIN bersifat simulasi.
+      </p>
+    </section>
+
+    <!-- 2. HALAMAN BUKA REKENING BARU -->
+    <section id="layar-daftar" class="screen">
+      <div class="topbar">
+        <button class="icon-btn" onclick="tampilLayar('layar-awal')">← Kembali</button>
+        <b>VCN • BUKA REKENING</b>
+        <span style="width: 72px;"></span>
+      </div>
+
+      <div class="card">
+        <div id="daftar-pesan" class="pesan-box">Isi nama pengguna, nomor rekening, dan PIN bebas sesuai keinginan Anda.</div>
+        <div class="form-group"><input id="daftar-nama" type="text" placeholder="Nama Pengguna" /></div>
+        <div class="form-group row-flex">
+          <input id="daftar-rek" class="grow" type="text" inputmode="numeric" placeholder="Nomor Rekening" />
+          <button class="btn-utama" style="width: auto; padding: 13px 14px;" onclick="isiRekOtomatis()">AUTO</button>
+        </div>
+        <div class="form-group"><input id="daftar-pin" type="password" placeholder="PIN Bebas (Terserah Anda)" /></div>
+        <div class="form-group"><input id="daftar-saldo" type="text" inputmode="numeric" value="500000" placeholder="Saldo Awal Simulasi" /></div>
+        <button class="btn-utama" onclick="prosesDaftar()">DAFTAR REKENING</button>
+
+        <div id="daftar-next-wrap" style="display: none; margin-top: 12px;">
+          <button class="btn-next" onclick="bukaMasuk('mVcn', rekBerhasilTerakhir)">♥ Next • Ke Halaman Masuk →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. HALAMAN MASUK -->
+    <section id="layar-masuk" class="screen">
+      <div class="topbar">
+        <button class="icon-btn" onclick="tampilLayar('layar-awal')">← Kembali</button>
+        <b id="masuk-judul" style="font-size: 19px; font-style: italic;">VCN • m-VCN</b>
+        <span style="width: 72px;"></span>
+      </div>
+
+      <div class="card">
+        <div id="masuk-pesan" class="pesan-box">Masukkan nomor rekening dan PIN, lalu tekan MASUK.</div>
+        <div class="form-group"><input id="masuk-rek" type="text" inputmode="numeric" placeholder="Nomor Rekening" /></div>
+        <div class="form-group"><input id="masuk-pin" type="password" placeholder="PIN" onkeydown="if(event.key==='Enter') prosesMasuk()" /></div>
+        <div class="form-group"><button id="btn-masuk" class="btn-next" onclick="prosesMasuk()">♥ MASUK →</button></div>
+        <button class="btn-next sekunder" onclick="bukaDaftar()">♥ Next • Buka Rekening Baru →</button>
+      </div>
+    </section>
+
+    <!-- 4. HALAMAN PENGGUNA -->
+    <section id="layar-pengguna" class="screen">
+      <div class="topbar">
+        <div class="brand-title" style="font-size: 20px; text-align: left;">VCN <span>mobile</span></div>
+        <div class="row-flex">
+          <button class="icon-btn" onclick="isiDataUji()">⚡ Isi Uji</button>
+          <button class="icon-btn" onclick="prosesKeluar()">Keluar</button>
+        </div>
+      </div>
+
+      <div class="card saldo-card">
+        <div>
+          <div id="info-nama" style="font-weight: 800; font-size: 14px;">Nama: -</div>
+          <div id="info-rek" style="color: var(--teks-sedang); font-weight: 700; font-size: 13px; margin-top: 2px;">No. Rekening: -</div>
+          <div style="color: var(--teks-sedang); font-size: 12px; margin-top: 6px;">Saldo Aktif</div>
+          <div id="info-saldo" class="saldo-angka">Rp 0</div>
+        </div>
+        <button class="btn-kecil" onclick="toggleSaldo()">👁 Sembunyikan / Lihat</button>
+      </div>
+
+      <div id="user-pesan" class="pesan-box">-</div>
+
+      <div class="menu-tabs">
+        <button class="menu-tab active" data-menu="transfer" onclick="pilihMenu('transfer')">Transfer</button>
+        <button class="menu-tab" data-menu="tarik" onclick="pilihMenu('tarik')">Tarik Tunai</button>
+        <button class="menu-tab" data-menu="setor" onclick="pilihMenu('setor')">Setor Tunai</button>
+        <button class="menu-tab" data-menu="qris" onclick="pilihMenu('qris')">QRIS &amp; Barcode</button>
+        <button class="menu-tab" data-menu="gantiPin" onclick="pilihMenu('gantiPin')">Ganti PIN</button>
+        <button class="menu-tab" data-menu="mutasi" onclick="pilihMenu('mutasi')">Mutasi &amp; Cek Saldo</button>
+      </div>
+
+      <div id="panel-transfer" class="card">
+        <h3 style="margin-bottom: 10px;">Transfer Antar Rekening VCN</h3>
+        <div class="form-group"><input id="trf-tujuan" type="text" inputmode="numeric" placeholder="Nomor Rekening Tujuan" /></div>
+        <div class="form-group"><input id="trf-nominal" type="text" inputmode="numeric" placeholder="Nominal Transfer" /></div>
+        <button class="btn-utama" onclick="aksiTransfer()">KIRIM TRANSFER</button>
+      </div>
+
+      <div id="panel-tarik" class="card" style="display: none;">
+        <h3 style="margin-bottom: 6px;">Tarik Tunai</h3>
+        <p class="catatan-kecil" style="text-align: left; margin-bottom: 10px;">Batas tarik sekali: Rp 1.250.000</p>
+        <div class="form-group"><input id="tarik-nominal" type="text" inputmode="numeric" placeholder="Nominal Tarik Tunai" /></div>
+        <button class="btn-utama" onclick="aksiTarik()">PROSES TARIK TUNAI</button>
+      </div>
+
+      <div id="panel-setor" class="card" style="display: none;">
+        <h3 style="margin-bottom: 10px;">Setor Tunai</h3>
+        <div class="form-group"><input id="setor-nominal" type="text" inputmode="numeric" placeholder="Nominal Setor Tunai" /></div>
+        <button class="btn-utama" onclick="aksiSetor()">PROSES SETOR TUNAI</button>
+      </div>
+
+      <div id="panel-qris" class="card" style="display: none;">
+        <div class="row-flex" style="justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap;">
+          <h3>QRIS &amp; Barcode</h3>
+          <button class="btn-kecil" onclick="bukaScannerSimulasi()">📷 Scan QR</button>
+        </div>
+
+        <div class="row-flex" style="margin-bottom: 10px; flex-wrap: wrap;">
+          <button id="mode-SETOR" class="btn-kecil aktif" onclick="pilihModeQr('SETOR')">SETOR</button>
+          <button id="mode-TARIK" class="btn-kecil" onclick="pilihModeQr('TARIK')">TARIK</button>
+          <button id="mode-TRANSFER" class="btn-kecil" onclick="pilihModeQr('TRANSFER')">TRANSFER</button>
+        </div>
+
+        <div class="form-group"><input id="qr-kode" type="text" placeholder="Kode QR (contoh: VCN:5501001:SETOR)" oninput="renderQrBarcode()" /></div>
+        <div class="form-group"><input id="qr-nominal" type="text" inputmode="numeric" placeholder="Nominal Transaksi QR" /></div>
+        <button class="btn-utama" onclick="aksiProsesQr()">PROSES TRANSAKSI QR</button>
+
+        <div class="qr-wrap">
+          <div class="qr-box"><canvas id="kanvas-qr" width="176" height="176"></canvas></div>
+          <div class="barcode-box">
+            <canvas id="kanvas-barcode" width="460" height="38" style="width: 100%; height: 38px;"></canvas>
+            <div id="teks-barcode" class="barcode-kode">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-gantiPin" class="card" style="display: none;">
+        <h3 style="margin-bottom: 10px;">Ganti PIN Rekening</h3>
+        <div class="form-group"><input id="pin-lama" type="password" placeholder="PIN Lama" /></div>
+        <div class="form-group"><input id="pin-baru" type="password" placeholder="PIN Baru" /></div>
+        <button class="btn-utama" onclick="aksiGantiPin()">SIMPAN PIN BARU</button>
+      </div>
+
+      <div id="panel-mutasi" class="card" style="display: none;">
+        <div class="row-flex" style="justify-content: space-between; margin-bottom: 12px;">
+          <h3>Mutasi Transaksi</h3>
+          <button class="btn-kecil aktif" onclick="aksiCekSaldoLog()">Cek Saldo &amp; Catat</button>
+        </div>
+        <div id="daftar-mutasi"></div>
+      </div>
+
+      <button class="btn-next" onclick="lanjutMenuBerikutnya()">♥ Next • Menu Berikutnya →</button>
+    </section>
+  </div>
+
+  <script>
+    class Transaksi {
+      constructor({ kodeRef, jenis, nominal, saldoSebelum, saldoSesudah, status, keterangan }) {
+        this.kodeRef = kodeRef;
+        this.jenis = jenis;
+        this.nominal = nominal;
+        this.saldoSebelum = saldoSebelum;
+        this.saldoSesudah = saldoSesudah;
+        this.status = status;
+        this.keterangan = keterangan;
+      }
+    }
+
+    class Rekening {
+      #pin;
+      #saldo;
+      #riwayat = [];
+
+      constructor({ nomorRekening, pin, saldoAwal, batasTarikSekali = 1250000 }) {
+        this.nomorRekening = String(nomorRekening);
+        this.#pin = String(pin);
+        this.#saldo = saldoAwal >= 0 ? Number(saldoAwal) : 0;
+        this.batasTarikSekali = Number(batasTarikSekali);
+        this._counterRef = 100;
+      }
+
+      get saldo() { return this.#saldo; }
+      get riwayat() { return [...this.#riwayat]; }
+      get kodeQrSetor() { return `VCN:${this.nomorRekening}:SETOR`; }
+      get kodeQrTarik() { return `VCN:${this.nomorRekening}:TARIK`; }
+      get kodeQrTransfer() { return `VCN:${this.nomorRekening}:TRF`; }
+
+      static formatRupiah(angka) {
+        const bulat = Math.round(Number(angka) || 0);
+        const teks = Math.abs(bulat).toString();
+        let hasil = '';
+        for (let i = 0; i < teks.length; i++) {
+          if (i > 0 && (teks.length - i) % 3 === 0) hasil += '.';
+          hasil += teks[i];
+        }
+        return bulat < 0 ? `-${hasil}` : hasil;
+      }
+
+      _buatKodeRef() {
+        this._counterRef += 1;
+        return `VCN-${this.nomorRekening}-${this._counterRef}`;
+      }
+
+      _catatTransaksi({ jenis, nominal, saldoSebelum, saldoSesudah, status, keterangan }) {
+        const trx = new Transaksi({
+          kodeRef: this._buatKodeRef(),
+          jenis,
+          nominal,
+          saldoSebelum,
+          saldoSesudah,
+          status,
+          keterangan,
+        });
+        this.#riwayat.unshift(trx);
+        return trx;
+      }
+
+      verifikasiPin(inputPin) { return this.#pin === String(inputPin || '').trim(); }
+
+      cekSaldo() {
+        return this._catatTransaksi({
+          jenis: 'CEK SALDO',
+          nominal: 0,
+          saldoSebelum: this.#saldo,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: 'Informasi saldo rekening VCN ditampilkan',
+        });
+      }
+
+      setorTunai(nominal, kanal = 'TUNAI') {
+        const sebelum = this.#saldo;
+        if (nominal <= 0) {
+          return this._catatTransaksi({
+            jenis: `SETOR ${kanal}`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Nominal setor harus lebih besar dari Rp 0',
+          });
+        }
+        this.#saldo += nominal;
+        return this._catatTransaksi({
+          jenis: `SETOR ${kanal}`,
+          nominal,
+          saldoSebelum: sebelum,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: `Setoran ${kanal} berhasil masuk ke rekening VCN`,
+        });
+      }
+
+      tarikTunai(nominal, kanal = 'TUNAI') {
+        const sebelum = this.#saldo;
+        if (nominal <= 0) {
+          return this._catatTransaksi({
+            jenis: `TARIK ${kanal}`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Nominal tarik harus lebih besar dari Rp 0',
+          });
+        }
+        if (nominal > this.batasTarikSekali) {
+          return this._catatTransaksi({
+            jenis: `TARIK ${kanal}`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: `Melebihi batas tarik sekali (Rp ${Rekening.formatRupiah(this.batasTarikSekali)})`,
+          });
+        }
+        if (nominal > this.#saldo) {
+          return this._catatTransaksi({
+            jenis: `TARIK ${kanal}`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Saldo rekening tidak mencukupi',
+          });
+        }
+        this.#saldo -= nominal;
+        return this._catatTransaksi({
+          jenis: `TARIK ${kanal}`,
+          nominal,
+          saldoSebelum: sebelum,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: `Penarikan ${kanal} disetujui`,
+        });
+      }
+
+      kirimTransfer(tujuanRekening, nominal, kanal = 'TRANSFER') {
+        const sebelum = this.#saldo;
+        const tujuan = String(tujuanRekening || '').trim();
+        if (!tujuan) {
+          return this._catatTransaksi({
+            jenis: `${kanal} KELUAR`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Nomor rekening tujuan belum diisi',
+          });
+        }
+        if (tujuan === this.nomorRekening) {
+          return this._catatTransaksi({
+            jenis: `${kanal} KELUAR`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Tidak dapat transfer ke rekening sendiri',
+          });
+        }
+        if (nominal <= 0) {
+          return this._catatTransaksi({
+            jenis: `${kanal} KELUAR`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Nominal transfer harus lebih besar dari Rp 0',
+          });
+        }
+        if (nominal > this.#saldo) {
+          return this._catatTransaksi({
+            jenis: `${kanal} KELUAR`,
+            nominal,
+            saldoSebelum: sebelum,
+            saldoSesudah: this.#saldo,
+            status: 'DITOLAK',
+            keterangan: 'Saldo tidak cukup untuk transfer',
+          });
+        }
+        this.#saldo -= nominal;
+        return this._catatTransaksi({
+          jenis: `${kanal} KELUAR`,
+          nominal,
+          saldoSebelum: sebelum,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: `Transfer ke rekening ${tujuan}`,
+        });
+      }
+
+      terimaTransfer(asalRekening, nominal, kanal = 'TRANSFER') {
+        if (nominal <= 0) return;
+        const sebelum = this.#saldo;
+        this.#saldo += nominal;
+        this._catatTransaksi({
+          jenis: `${kanal} MASUK`,
+          nominal,
+          saldoSebelum: sebelum,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: `Terima transfer dari rekening ${asalRekening}`,
+        });
+      }
+
+      gantiPin(pinLama, pinBaru) {
+        const bersihBaru = String(pinBaru || '').trim();
+        if (!this.verifikasiPin(pinLama)) return 'Ganti PIN gagal: PIN lama tidak sesuai.';
+        if (!bersihBaru) return 'Ganti PIN gagal: PIN baru tidak boleh kosong.';
+        this.#pin = bersihBaru;
+        this._catatTransaksi({
+          jenis: 'GANTI PIN',
+          nominal: 0,
+          saldoSebelum: this.#saldo,
+          saldoSesudah: this.#saldo,
+          status: 'BERHASIL',
+          keterangan: 'PIN rekening VCN diperbarui',
+        });
+        return 'PIN baru berhasil disimpan.';
+      }
+    }
+
+    class AkunVcn {
+      constructor({ namaPengguna, rekening }) {
+        this.namaPengguna = namaPengguna;
+        this.rekening = rekening;
+      }
+    }
+
+    class SistemVcnMobile {
+      constructor({ namaBank = 'VCN', daftarAkun = [], maksimalPercobaanPin = 3 } = {}) {
+        this.namaBank = namaBank;
+        this.daftarAkun = daftarAkun;
+        this.maksimalPercobaanPin = maksimalPercobaanPin;
+        this.akunAktif = null;
+        this.percobaanGagal = 0;
+        this.terblokirSesi = false;
+        this._urutRekening = 5501001;
+      }
+
+      saranNomorRekeningBaru() {
+        while (true) {
+          const kandidat = String(this._urutRekening);
+          this._urutRekening += 1;
+          if (!this.cariRekening(kandidat)) return kandidat;
+        }
+      }
+
+      cariRekening(noRekening) {
+        const bersih = String(noRekening || '').trim();
+        const found = this.daftarAkun.find((a) => a.rekening.nomorRekening === bersih);
+        return found ? found.rekening : null;
+      }
+
+      daftarAkunBaru({ namaPengguna, noRekening, pinBebas, saldoAwal }) {
+        const nama = String(namaPengguna || '').trim();
+        const rek = String(noRekening || '').trim();
+        const pin = String(pinBebas || '').trim();
+
+        if (!nama) return 'Pendaftaran gagal: Nama pengguna wajib diisi.';
+        if (!/^\d{4,}$/.test(rek)) return 'Pendaftaran gagal: Nomor rekening harus angka minimal 4 digit.';
+        if (this.cariRekening(rek)) return `Pendaftaran gagal: Nomor rekening ${rek} sudah terdaftar.`;
+        if (!pin) return 'Pendaftaran gagal: Isi PIN bebas pilihan Anda terlebih dahulu.';
+        if (Number.isNaN(saldoAwal) || saldoAwal < 0) return 'Pendaftaran gagal: Saldo awal tidak boleh negatif.';
+
+        this.daftarAkun.push(
+          new AkunVcn({
+            namaPengguna: nama,
+            rekening: new Rekening({ nomorRekening: rek, pin, saldoAwal }),
+          })
+        );
+        return `Rekening ${rek} atas nama ${nama} di ${this.namaBank} berhasil dibuat. Silakan klik MASUK.`;
+      }
+
+      pastikanAdaRekeningRekan(rekeningSaatIni) {
+        const lain = this.daftarAkun.find((a) => a.rekening.nomorRekening !== rekeningSaatIni);
+        if (lain) return lain.rekening.nomorRekening;
+
+        const rekBaru = this.saranNomorRekeningBaru();
+        this.daftarAkun.push(
+          new AkunVcn({
+            namaPengguna: 'Pengguna Uji',
+            rekening: new Rekening({ nomorRekening: rekBaru, pin: '1234', saldoAwal: 250000 }),
+          })
+        );
+        return rekBaru;
+      }
+
+      cariRekeningDariQrTransfer(qrCode) {
+        const bersih = String(qrCode || '').trim().toUpperCase();
+        if (bersih.startsWith('VCN:') && bersih.endsWith(':TRF')) {
+          const bagian = bersih.split(':');
+          if (bagian.length >= 2) return this.cariRekening(bagian[1]);
+        }
+        const match = this.daftarAkun.find(
+          (a) => a.rekening.kodeQrTransfer.toUpperCase() === bersih || a.rekening.nomorRekening === bersih
+        );
+        return match ? match.rekening : null;
+      }
+
+      login(noRekening, pin) {
+        if (this.terblokirSesi) return `AKSES TERKUNCI: Salah PIN ${this.maksimalPercobaanPin} kali.`;
+        const rek = this.cariRekening(noRekening);
+        if (!rek) return 'REKENING BELUM TERDAFTAR: Buka rekening baru terlebih dahulu.';
+
+        if (rek.verifikasiPin(pin)) {
+          this.akunAktif = this.daftarAkun.find((a) => a.rekening.nomorRekening === rek.nomorRekening) || null;
+          this.percobaanGagal = 0;
+          const nama = this.akunAktif ? this.akunAktif.namaPengguna : rek.nomorRekening;
+          return `Berhasil masuk ke ${this.namaBank} • ${nama} (${rek.nomorRekening})`;
+        }
+
+        this.percobaanGagal += 1;
+        const sisa = this.maksimalPercobaanPin - this.percobaanGagal;
+        if (sisa <= 0) {
+          this.terblokirSesi = true;
+          return `PIN SALAH: Batas percobaan habis (${this.maksimalPercobaanPin}/${this.maksimalPercobaanPin}).`;
+        }
+        return `PIN SALAH: Sisa kesempatan masuk ${sisa} kali lagi.`;
+      }
+
+      prosesTransfer({ noRekeningTujuan, nominal, kanal = 'TRANSFER' }) {
+        if (!this.akunAktif) return 'Tidak ada sesi aktif.';
+        const tujuan = this.cariRekening(noRekeningTujuan);
+        if (!tujuan) {
+          this.akunAktif.rekening._catatTransaksi({
+            jenis: `${kanal} KELUAR`,
+            nominal,
+            saldoSebelum: this.akunAktif.rekening.saldo,
+            saldoSesudah: this.akunAktif.rekening.saldo,
+            status: 'DITOLAK',
+            keterangan: `Rekening tujuan ${String(noRekeningTujuan || '').trim()} tidak terdaftar`,
+          });
+          return `${kanal} ditolak: Rekening tujuan tidak terdaftar.`;
+        }
+
+        const hasil = this.akunAktif.rekening.kirimTransfer(noRekeningTujuan, nominal, kanal);
+        if (hasil.status === 'BERHASIL') {
+          tujuan.terimaTransfer(this.akunAktif.rekening.nomorRekening, nominal, kanal);
+          return `${kanal} Rp ${Rekening.formatRupiah(nominal)} ke rek ${tujuan.nomorRekening} berhasil.`;
+        }
+        return `${kanal} ditolak: ${hasil.keterangan}.`;
+      }
+
+      prosesQrCardless({ kodeQr, nominal }) {
+        if (!this.akunAktif) return 'Tidak ada sesi aktif.';
+        const qr = String(kodeQr || '').trim().toUpperCase();
+        const rek = this.akunAktif.rekening;
+
+        if (qr === rek.kodeQrSetor.toUpperCase() || qr.endsWith(`:${rek.nomorRekening}:SETOR`)) {
+          const trx = rek.setorTunai(nominal, 'QR');
+          return trx.status === 'BERHASIL'
+            ? `Setor QR Rp ${Rekening.formatRupiah(nominal)} berhasil (${trx.kodeRef}).`
+            : `Setor QR ditolak: ${trx.keterangan}.`;
+        }
+        if (qr === rek.kodeQrTarik.toUpperCase() || qr.endsWith(`:${rek.nomorRekening}:TARIK`)) {
+          const trx = rek.tarikTunai(nominal, 'QR');
+          return trx.status === 'BERHASIL'
+            ? `Tarik QR Rp ${Rekening.formatRupiah(nominal)} berhasil (${trx.kodeRef}).`
+            : `Tarik QR ditolak: ${trx.keterangan}.`;
+        }
+        return `Kode QR tidak sesuai dengan rekening ${rek.nomorRekening}.`;
+      }
+
+      logout() { this.akunAktif = null; }
+    }
+
+    const vcn = new SistemVcnMobile({ namaBank: 'VCN', daftarAkun: [] });
+    let rekBerhasilTerakhir = '';
+    let jalurAktif = 'mVcn';
+    let menuAktif = 'transfer';
+    let tampilkanSaldo = true;
+    let modeQr = 'SETOR';
+    const urutanMenu = ['transfer', 'tarik', 'setor', 'qris', 'gantiPin', 'mutasi'];
+
+    function tampilLayar(id) {
+      document.querySelectorAll('.screen').forEach((el) => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      updateLabelRekTerakhir();
+    }
+
+    function updateLabelRekTerakhir() {
+      const terakhir = vcn.daftarAkun.length ? vcn.daftarAkun[vcn.daftarAkun.length - 1].rekening.nomorRekening : '-';
+      document.getElementById('rek-terakhir-label').textContent = terakhir;
+    }
+
+    function bukaInfo() {
+      alert('Fungsi Menu VCN mobile:\n• m-VCN: Transfer, Tarik/Setor Tunai & QRIS\n• KlikVCN: Mutasi, Ganti PIN & Transfer\n• myVCN: QRIS, Barcode & Saldo');
+    }
+
+    function bukaDaftar(rekAwal) {
+      document.getElementById('daftar-next-wrap').style.display = 'none';
+      document.getElementById('daftar-pesan').textContent = 'Isi nama pengguna, nomor rekening, dan PIN bebas sesuai keinginan Anda.';
+      if (rekAwal) {
+        document.getElementById('daftar-rek').value = rekAwal;
+      } else if (!document.getElementById('daftar-rek').value.trim()) {
+        document.getElementById('daftar-rek').value = vcn.saranNomorRekeningBaru();
+      }
+      tampilLayar('layar-daftar');
+    }
+
+    function isiRekOtomatis() {
+      document.getElementById('daftar-rek').value = vcn.saranNomorRekeningBaru();
+    }
+
+    function bacaAngka(teks) {
+      const bersih = String(teks || '').trim().replace(/\./g, '').replace(',', '.');
+      if (!bersih) return NaN;
+      return Number(bersih);
+    }
+
+    function prosesDaftar() {
+      const nama = document.getElementById('daftar-nama').value;
+      const rekDiminta = document.getElementById('daftar-rek').value.trim();
+      const pin = document.getElementById('daftar-pin').value;
+      const saldo = bacaAngka(document.getElementById('daftar-saldo').value);
+
+      if (Number.isNaN(saldo)) {
+        document.getElementById('daftar-pesan').textContent = 'Saldo awal harus berupa angka.';
+        return;
+      }
+
+      const hasil = vcn.daftarAkunBaru({
+        namaPengguna: nama,
+        noRekening: rekDiminta,
+        pinBebas: pin,
+        saldoAwal: saldo,
+      });
+      document.getElementById('daftar-pesan').textContent = hasil;
+
+      if (hasil.toLowerCase().includes('berhasil')) {
+        rekBerhasilTerakhir = rekDiminta;
+        document.getElementById('daftar-pin').value = '';
+        document.getElementById('daftar-next-wrap').style.display = 'block';
+        updateLabelRekTerakhir();
+      }
+    }
+
+    function labelJalur(jalur) {
+      if (jalur === 'klikVcn') return `Klik${vcn.namaBank}`;
+      if (jalur === 'myVcn') return `my${vcn.namaBank}`;
+      return `m-${vcn.namaBank}`;
+    }
+
+    function bukaMasuk(jalur, rekAwal) {
+      jalurAktif = jalur;
+      document.getElementById('masuk-judul').textContent = `${vcn.namaBank} • ${labelJalur(jalur)}`;
+      document.getElementById('masuk-pesan').textContent = 'Masukkan nomor rekening dan PIN, lalu tekan MASUK.';
+      const terakhir = vcn.daftarAkun.length ? vcn.daftarAkun[vcn.daftarAkun.length - 1].rekening.nomorRekening : '';
+      document.getElementById('masuk-rek').value = rekAwal || terakhir || '';
+      document.getElementById('masuk-pin').value = '';
+      document.getElementById('masuk-rek').disabled = vcn.terblokirSesi;
+      document.getElementById('masuk-pin').disabled = vcn.terblokirSesi;
+      document.getElementById('btn-masuk').disabled = vcn.terblokirSesi;
+      tampilLayar('layar-masuk');
+    }
+
+    function prosesMasuk() {
+      if (vcn.terblokirSesi) return;
+      const rek = document.getElementById('masuk-rek').value;
+      const pin = document.getElementById('masuk-pin').value;
+      const hasil = vcn.login(rek, pin);
+      document.getElementById('masuk-pin').value = '';
+      document.getElementById('masuk-rek').disabled = vcn.terblokirSesi;
+      document.getElementById('masuk-pin').disabled = vcn.terblokirSesi;
+      document.getElementById('btn-masuk').disabled = vcn.terblokirSesi;
+
+      if (vcn.akunAktif) {
+        if (jalurAktif === 'klikVcn') menuAktif = 'mutasi';
+        else if (jalurAktif === 'myVcn') menuAktif = 'qris';
+        else menuAktif = 'transfer';
+
+        const rekan = vcn.daftarAkun.find((a) => a.rekening.nomorRekening !== vcn.akunAktif.rekening.nomorRekening);
+        if (rekan) document.getElementById('trf-tujuan').value = rekan.rekening.nomorRekening;
+
+        pilihModeQr('SETOR');
+        setUserPesan(hasil);
+        pilihMenu(menuAktif);
+        refreshAkunUi();
+        tampilLayar('layar-pengguna');
+      } else {
+        document.getElementById('masuk-pesan').textContent = hasil;
+      }
+    }
+
+    function prosesKeluar() {
+      vcn.logout();
+      tampilLayar('layar-awal');
+    }
+
+    function setUserPesan(teks) { document.getElementById('user-pesan').textContent = teks; }
+
+    function toggleSaldo() {
+      tampilkanSaldo = !tampilkanSaldo;
+      refreshAkunUi();
+    }
+
+    function refreshAkunUi() {
+      if (!vcn.akunAktif) return;
+      const rek = vcn.akunAktif.rekening;
+      document.getElementById('info-nama').textContent = `Nama: ${vcn.akunAktif.namaPengguna}`;
+      document.getElementById('info-rek').textContent = `No. Rekening: ${rek.nomorRekening}`;
+      document.getElementById('info-saldo').textContent = tampilkanSaldo ? `Rp ${Rekening.formatRupiah(rek.saldo)}` : 'Rp ••••••';
+      renderMutasi();
+      renderQrBarcode();
+    }
+
+    function pilihMenu(menu) {
+      menuAktif = menu;
+      document.querySelectorAll('.menu-tab').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.menu === menu);
+      });
+      urutanMenu.forEach((m) => {
+        document.getElementById(`panel-${m}`).style.display = m === menu ? 'block' : 'none';
+      });
+      if (menu === 'qris') renderQrBarcode();
+      if (menu === 'mutasi') renderMutasi();
+    }
+
+    function lanjutMenuBerikutnya() {
+      const idx = urutanMenu.indexOf(menuAktif);
+      pilihMenu(urutanMenu[(idx + 1) % urutanMenu.length]);
+    }
+
+    function pilihModeQr(mode) {
+      if (!vcn.akunAktif) return;
+      modeQr = mode;
+      ['SETOR', 'TARIK', 'TRANSFER'].forEach((m) => {
+        document.getElementById(`mode-${m}`).classList.toggle('aktif', m === mode);
+      });
+      const rek = vcn.akunAktif.rekening;
+      if (mode === 'SETOR') document.getElementById('qr-kode').value = rek.kodeQrSetor;
+      else if (mode === 'TARIK') document.getElementById('qr-kode').value = rek.kodeQrTarik;
+      else {
+        const rekan = vcn.daftarAkun.find((a) => a.rekening.nomorRekening !== rek.nomorRekening);
+        document.getElementById('qr-kode').value = rekan ? rekan.rekening.kodeQrTransfer : rek.kodeQrTransfer;
+      }
+      renderQrBarcode();
+    }
+
+    function isiDataUji() {
+      if (!vcn.akunAktif) return;
+      const rek = vcn.akunAktif.rekening;
+      const rekRekan = vcn.pastikanAdaRekeningRekan(rek.nomorRekening);
+      document.getElementById('trf-tujuan').value = rekRekan;
+      document.getElementById('trf-nominal').value = '50000';
+      document.getElementById('tarik-nominal').value = '50000';
+      document.getElementById('setor-nominal').value = '50000';
+      document.getElementById('qr-nominal').value = '50000';
+      if (menuAktif === 'qris') {
+        if (modeQr === 'TRANSFER') document.getElementById('qr-kode').value = `VCN:${rekRekan}:TRF`;
+        else if (modeQr === 'TARIK') document.getElementById('qr-kode').value = rek.kodeQrTarik;
+        else document.getElementById('qr-kode').value = rek.kodeQrSetor;
+      }
+      setUserPesan(`Data uji LKPD terisi: Nominal Rp 50.000 • Rekening uji ${rekRekan}.`);
+      renderQrBarcode();
+    }
+
+    function bukaScannerSimulasi() {
+      if (!vcn.akunAktif) return;
+      const rek = vcn.akunAktif.rekening;
+      const opsi = [rek.kodeQrSetor, rek.kodeQrTarik];
+      vcn.daftarAkun.forEach((a) => {
+        if (a.rekening.nomorRekening !== rek.nomorRekening) opsi.push(a.rekening.kodeQrTransfer);
+      });
+      const pilihan = prompt(`Scan QR Code — Pilih/ketik kode QR:\n${opsi.join('\n')}`, opsi[0]);
+      if (pilihan !== null && pilihan.trim()) {
+        const bersih = pilihan.trim();
+        const atas = bersih.toUpperCase();
+        if (atas.endsWith(':TARIK')) modeQr = 'TARIK';
+        else if (atas.endsWith(':TRF')) modeQr = 'TRANSFER';
+        else modeQr = 'SETOR';
+        ['SETOR', 'TARIK', 'TRANSFER'].forEach((m) => {
+          document.getElementById(`mode-${m}`).classList.toggle('aktif', m === modeQr);
+        });
+        document.getElementById('qr-kode').value = bersih;
+        renderQrBarcode();
+      }
+    }
+
+    function aksiTransfer() {
+      const nominal = bacaAngka(document.getElementById('trf-nominal').value);
+      if (Number.isNaN(nominal)) return setUserPesan('Nominal tidak valid.');
+      const hasil = vcn.prosesTransfer({ noRekeningTujuan: document.getElementById('trf-tujuan').value, nominal });
+      setUserPesan(hasil);
+      if (hasil.toLowerCase().includes('berhasil')) document.getElementById('trf-nominal').value = '';
+      refreshAkunUi();
+    }
+
+    function aksiTarik() {
+      if (!vcn.akunAktif) return;
+      const nominal = bacaAngka(document.getElementById('tarik-nominal').value);
+      if (Number.isNaN(nominal)) return setUserPesan('Nominal tidak valid.');
+      const trx = vcn.akunAktif.rekening.tarikTunai(nominal);
+      setUserPesan(
+        trx.status === 'BERHASIL'
+          ? `Tarik Rp ${Rekening.formatRupiah(nominal)} berhasil (${trx.kodeRef}).`
+          : `Tarik ditolak: ${trx.keterangan}.`
+      );
+      if (trx.status === 'BERHASIL') document.getElementById('tarik-nominal').value = '';
+      refreshAkunUi();
+    }
+
+    function aksiSetor() {
+      if (!vcn.akunAktif) return;
+      const nominal = bacaAngka(document.getElementById('setor-nominal').value);
+      if (Number.isNaN(nominal)) return setUserPesan('Nominal tidak valid.');
+      const trx = vcn.akunAktif.rekening.setorTunai(nominal);
+      setUserPesan(
+        trx.status === 'BERHASIL'
+          ? `Setor Rp ${Rekening.formatRupiah(nominal)} berhasil (${trx.kodeRef}).`
+          : `Setor ditolak: ${trx.keterangan}.`
+      );
+      if (trx.status === 'BERHASIL') document.getElementById('setor-nominal').value = '';
+      refreshAkunUi();
+    }
+
+    function aksiProsesQr() {
+      if (!vcn.akunAktif) return;
+      const nominal = bacaAngka(document.getElementById('qr-nominal').value);
+      if (Number.isNaN(nominal)) return setUserPesan('Nominal tidak valid.');
+      const kode = document.getElementById('qr-kode').value.trim();
+
+      let hasil = '';
+      if (modeQr === 'TRANSFER') {
+        const target = vcn.cariRekeningDariQrTransfer(kode);
+        if (!target) {
+          hasil = 'Kode QR tujuan tidak terdaftar. Klik "Isi Uji" untuk membuat rekening uji.';
+        } else {
+          hasil = vcn.prosesTransfer({ noRekeningTujuan: target.nomorRekening, nominal, kanal: 'QRIS' });
+        }
+      } else {
+        hasil = vcn.prosesQrCardless({ kodeQr: kode, nominal });
+      }
+
+      setUserPesan(hasil);
+      if (hasil.toLowerCase().includes('berhasil')) document.getElementById('qr-nominal').value = '';
+      refreshAkunUi();
+    }
+
+    function aksiGantiPin() {
+      if (!vcn.akunAktif) return;
+      const hasil = vcn.akunAktif.rekening.gantiPin(
+        document.getElementById('pin-lama').value,
+        document.getElementById('pin-baru').value
+      );
+      setUserPesan(hasil);
+      if (hasil.toLowerCase().includes('berhasil')) {
+        document.getElementById('pin-lama').value = '';
+        document.getElementById('pin-baru').value = '';
+      }
+      refreshAkunUi();
+    }
+
+    function aksiCekSaldoLog() {
+      if (!vcn.akunAktif) return;
+      const trx = vcn.akunAktif.rekening.cekSaldo();
+      setUserPesan(`${trx.keterangan}: Rp ${Rekening.formatRupiah(trx.saldoSesudah)} (${trx.kodeRef}).`);
+      refreshAkunUi();
+    }
+
+    function renderMutasi() {
+      if (!vcn.akunAktif) return;
+      const list = vcn.akunAktif.rekening.riwayat;
+      const wadah = document.getElementById('daftar-mutasi');
+      if (!list.length) {
+        wadah.innerHTML = '<div class="catatan-kecil">Belum ada transaksi tercatat.</div>';
+        return;
+      }
+      wadah.innerHTML = list
+        .map(
+          (t) => `
+          <div class="trx-item">
+            <div class="trx-atas">
+              <span>${t.jenis} • ${t.kodeRef}</span>
+              <span class="${t.status === 'BERHASIL' ? 'status-ok' : 'status-no'}">${t.status}</span>
+            </div>
+            <div>Nominal: <b>Rp ${Rekening.formatRupiah(t.nominal)}</b> • Saldo: Rp ${Rekening.formatRupiah(t.saldoSesudah)}</div>
+            <div style="color: var(--teks-sedang); margin-top: 2px;">${t.keterangan}</div>
+          </div>`
+        )
+        .join('');
+    }
+
+    function renderQrBarcode() {
+      const isi = (document.getElementById('qr-kode').value || 'VCN:0000:SETOR').trim();
+      const qCanvas = document.getElementById('kanvas-qr');
+      const qCtx = qCanvas.getContext('2d');
+      const modules = 21;
+      const cell = qCanvas.width / modules;
+
+      qCtx.fillStyle = '#ffffff';
+      qCtx.fillRect(0, 0, qCanvas.width, qCanvas.height);
+
+      let seed = 901;
+      for (let i = 0; i < isi.length; i++) seed = (seed * 37 + isi.charCodeAt(i)) & 0x7fffffff;
+
+      function isFinder(r, c) {
+        return (r < 7 && c < 7) || (r < 7 && c >= modules - 7) || (r >= modules - 7 && c < 7);
+      }
+
+      qCtx.fillStyle = '#000000';
+      for (let r = 0; r < modules; r++) {
+        for (let c = 0; c < modules; c++) {
+          let gelap = false;
+          if (isFinder(r, c)) {
+            const lr = r < 7 ? r : r - (modules - 7);
+            const lc = c < 7 ? c : c - (modules - 7);
+            gelap = lr === 0 || lr === 6 || lc === 0 || lc === 6 || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+          } else {
+            const h = (seed + r * 53 + c * 97) & 0x7fffffff;
+            gelap = h % 2 === 0;
+          }
+          if (gelap) qCtx.fillRect(c * cell, r * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+
+      const bCanvas = document.getElementById('kanvas-barcode');
+      const bCtx = bCanvas.getContext('2d');
+      bCtx.fillStyle = '#ffffff';
+      bCtx.fillRect(0, 0, bCanvas.width, bCanvas.height);
+      bCtx.fillStyle = '#000000';
+
+      let bSeed = 1337;
+      for (let i = 0; i < isi.length; i++) bSeed = (bSeed * 31 + isi.charCodeAt(i)) & 0x7fffffff;
+
+      let x = 2;
+      let idx = 0;
+      while (x < bCanvas.width - 4) {
+        const v = (bSeed + idx * 73) & 0x7fffffff;
+        const w = ((v % 3) + 1) * 2.2;
+        if (v % 2 === 0) bCtx.fillRect(x, 0, w, bCanvas.height);
+        x += w + 2.4;
+        idx += 1;
+      }
+
+      document.getElementById('teks-barcode').textContent = isi;
+    }
+
+    updateLabelRekTerakhir();
+    renderQrBarcode();
+  </script>
+</body>
+</html>
